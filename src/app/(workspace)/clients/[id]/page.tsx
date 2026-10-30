@@ -7,6 +7,8 @@ import { getWorkspace } from "@/lib/workspace";
 import { mapsLink, whatsappLink } from "@/lib/contact-links";
 import { money } from "@/lib/utils";
 import { STAGE_LABELS } from "@/lib/models";
+import { getActivityFeed } from "@/lib/activities";
+import { ActivityCards } from "@/components/activity-cards";
 export default async function ClientDetail({
   params,
 }: {
@@ -16,6 +18,7 @@ export default async function ClientDetail({
   const w = await getWorkspace();
   const c = w.companies.find((item) => item.id === id);
   if (!c) notFound();
+  const activityFeed = await getActivityFeed({ company: id }, 5);
   const contacts = w.contacts.filter((p) => p.company_id === id);
   const opportunities = w.opportunities.filter((o) => o.company_id === id);
   const maps = mapsLink(c.address, c.city);
@@ -149,11 +152,34 @@ export default async function ClientDetail({
               )}
             </div>
           </section>
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-semibold">Aktivitas · {w.property.name}</h2>
+              <Link
+                href={`/activities/new?company=${id}`}
+                className="text-xs font-semibold text-emerald-800"
+              >
+                Catat aktivitas →
+              </Link>
+            </div>
+            <ActivityCards activities={activityFeed.activities} workspace={w} />
+            {!activityFeed.activities.length && (
+              <p className="rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-400">
+                Belum ada aktivitas pada client/property ini.
+              </p>
+            )}
+            <Link
+              href={`/activities?company=${id}`}
+              className="inline-block text-xs font-semibold text-emerald-800"
+            >
+              Lihat semua aktivitas ({activityFeed.total}) →
+            </Link>
+          </section>
           <section className="rounded-xl border border-dashed border-slate-300 p-6">
-            <h2 className="font-semibold">Timeline & dokumen</h2>
+            <h2 className="font-semibold">Dokumen</h2>
             <p className="mt-3 text-sm leading-6 text-slate-500">
-              Modul aktivitas, greeting dan LOO/LOA belum tersedia pada fondasi
-              ini. Pengiriman dokumen belum diaktifkan.
+              Greeting dan LOO/LOA belum tersedia. Pengiriman dokumen belum
+              diaktifkan.
             </p>
           </section>
         </div>

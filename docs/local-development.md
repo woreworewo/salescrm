@@ -64,8 +64,20 @@ Gunakan jendela/profil browser terpisah untuk menguji pengguna berbeda. Cookie p
 - Role/membership/assignment diperbarui melalui RPC dengan pemeriksaan scope, versi, guard admin terakhir dan audit. Tidak ada grant UPDATE tabel membership kepada browser.
 - Pengiriman aktivasi saat ini sinkron dengan delivery claim, cooldown dan status hasil; belum memakai worker antrean/outbox. Durable job tetap diperlukan untuk pengiriman dokumen/CRM dan rollout produksi. Token tidak disimpan pada tabel undangan maupun dikembalikan ke UI admin.
 - Auth link menggunakan origin tetap `CRM_APP_URL`; flow hanya magiclink/recovery dan tidak menerima tujuan redirect bebas. Log argumen Server Functions serta request konfirmasi dimatikan di development untuk menghindari token/password tercetak. Terapkan redaksi URL token pada proxy/hosting sebelum cloud rollout.
-- Tes PostgreSQL/RLS memakai PGlite dan mock skema Auth; bukan pengganti pengujian Supabase Auth/SMTP setelah Docker tersedia. Build/UI demo dapat diverifikasi tanpa Docker; penyimpanan bisnis tetap dinonaktifkan pada demo.
-- Selfie/GPS, dokumen, email greeting/follow-up, inbox dan live chat belum diaktifkan. Tidak ada deployment cloud dalam tahap lokal ini.
+- Tes PostgreSQL/RLS memakai PGlite dan mock skema Auth/Storage; bukan pengganti pengujian Supabase Auth/Storage/SMTP setelah Docker tersedia. Build/UI demo dapat diverifikasi tanpa Docker; penyimpanan bisnis tetap dinonaktifkan pada demo.
+- Sales Activities sudah diimplementasikan; kamera/lokasi dan unggah Storage belum diuji end-to-end. Dokumen, email greeting/follow-up, inbox dan live chat belum diaktifkan. Tidak ada deployment cloud dalam tahap lokal ini.
+
+### Uji Sales Activities setelah backend lokal tersedia
+
+Storage lokal kini diaktifkan. Untuk instalasi lokal yang sudah berjalan, hentikan dengan `npm run local:stop`, jalankan `npx supabase start`, lalu terapkan migrasi tambahan dengan `npx supabase migration up --local`; jangan reset database. Gunakan konfigurasi lokal yang dibuat helper.
+
+1. Buka Activities → Catat aktivitas, pilih client/PIC/peluang yang sesuai. WhatsApp/Direct Call/Email dapat dicatat tanpa selfie/GPS; aktivitas tidak mengubah pipeline.
+2. Sales Visit/Meeting wajib selfie dan lokasi. Izinkan kamera/lokasi hanya saat diminta. Gunakan localhost atau HTTPS; origin HTTP dari alamat LAN bukan secure context untuk Geolocation. Foto sumber JPEG/PNG/WebP maksimal 10 MB/24 MP dikompresi menjadi JPEG ≤200 KB; server memvalidasi isi, mengompresi ulang dan menghapus EXIF. Tidak ada pelacakan lokasi berkala atau jaminan liveness/anti-pemalsuan.
+3. Uji penolakan izin, GPS >10 menit, foto tidak valid, dan kegagalan unggah: tidak boleh muncul aktivitas tercatat atau task follow-up. Koreksi form yang berubah menggunakan request baru; retry identik tetap idempotent. Peringatan akurasi rendah tidak membuat lokasi palsu.
+4. Tambahkan tindak lanjut dan simpan; periksa satu aktivitas dan satu task. Ulangi request identik; pastikan tidak ada duplikasi. Uji filter/paginasi dan timeline client.
+5. Periksa foto hanya dapat dibaca penulis atau admin berwenang pada property terkait, tidak oleh sales lain, tenant lain, atau anggota yang dicabut aksesnya. Foto tercatat tidak dapat ditimpa/dihapus melalui role aplikasi. Route foto memeriksa sesi/property dan tidak menggunakan URL publik.
+
+Draft yang belum selesai disembunyikan dari feed/admin. Unggah/finalisasi draft dibatasi satu jam dan finalisasi memeriksa ulang usia GPS. Draft/file yatim belum dihapus otomatis; retensi dan pekerjaan cleanup wajib ditentukan sebelum produksi. Lokasi/foto adalah bukti yang dikirim perangkat, bukan verifikasi anti-fraud.
 
 ## 6. Pemeriksaan dan berhenti
 

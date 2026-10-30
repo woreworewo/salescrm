@@ -51,7 +51,8 @@ Halaman detail client menyediakan tautan Google Maps berdasarkan alamat, tombol 
 - Catat waktu aktivitas, catatan hasil, tindak lanjut, dan tanggal follow-up.
 - Dukung pengambilan selfie, kompresi gambar sebelum unggah, serta GPS berupa latitude, longitude, akurasi, dan waktu pengambilan.
 - Usulan kompresi: resize dan kualitas adaptif dengan batas ukuran yang disepakati; wajah harus tetap terbaca. Jangan menyimpan gambar asli tanpa kebutuhan.
-- Izin kamera/GPS yang ditolak harus menghasilkan pesan yang jelas. Kewajiban selfie/GPS per tipe aktivitas masih perlu ditentukan.
+- Sales Visit / Meeting wajib menyertakan selfie dan GPS; WhatsApp, Direct Call, dan Email tidak membutuhkan bukti tersebut. Izin kamera/lokasi yang ditolak harus menghasilkan pesan jelas dan kunjungan belum dapat disimpan. GPS maksimal berumur 10 menit saat penyimpanan; akurasi dan waktu pengambilan ditampilkan.
+- Selfie JPEG hasil kompresi maksimal 200 KB dan sisi terpanjang 1.280 px; hapus EXIF di server. Simpan privat dengan pemeriksaan akses ulang setiap pembacaan. Draft dan unggahan harus terkonfirmasi sebelum aktivitas tercatat; retry identik tidak menduplikasi aktivitas/task. Perubahan pipeline tetap terpisah.
 - GPS perangkat adalah bukti lokasi yang dilaporkan perangkat; belum mencakup jaminan anti-pemalsuan.
 
 ## 3. Pipeline penjualan
@@ -191,7 +192,7 @@ Tahapan ini tidak menghapus kebutuhan pada fase berikutnya. Integrasi eksternal 
 ## 10. Kriteria penerimaan utama
 
 - Semua field client tersimpan dan dapat diedit; satu perusahaan dapat memiliki beberapa PIC.
-- Aktivitas tersimpan pada tabel terpisah dengan tipe komunikasi wajib; foto/GPS dapat diperiksa sesuai aturan yang disepakati.
+- Aktivitas tersimpan pada tabel terpisah dengan tipe komunikasi wajib; Sales Visit/Meeting memerlukan selfie JPEG ≤200 KB dan GPS maksimal berumur 10 menit. Kegagalan bukti tidak boleh menghasilkan aktivitas tercatat/task; retry identik tidak menduplikasi keduanya.
 - Perubahan pipeline tersimpan dan terlihat pada riwayat peluang.
 - Kanban dan tabel menampilkan peluang yang sama; filter, penanda overdue/aging, drag-and-drop, dan menu keyboard berfungsi. Transisi tidak sah ditolak tanpa meninggalkan tampilan tahap yang keliru.
 - Tombol Maps dan WhatsApp menggunakan alamat/nomor client yang dipilih.
@@ -215,7 +216,7 @@ Kanban dan alur LOO–LOA pada bagian 3 dan 7 telah disetujui. Rekomendasi audit
 - Template resmi LOO/LOA, ketentuan pembatalan/perubahan, pihak berwenang, dan format bukti persetujuan.
 - Syarat Won dan konfirmasi booking secara rinci: ambang/tenggat deposit, fasilitas kredit, verifier, serta sumber pemeriksaan ketersediaan.
 - Provider email (misalnya Google Workspace/Microsoft 365/provider lain) dan domain website untuk widget.
-- Apakah selfie/GPS wajib hanya saat Sales Visit / Meeting? Target maksimum ukuran foto dan kebijakan retensinya?
+- Kebijakan retensi selfie/GPS dan jadwal pembersihan draft yang ditinggalkan; target kompresi 200 KB/1.280 px perlu diuji pada perangkat lapangan.
 - Daftar Account Type, tahap pipeline final, dan cakupan akses data tiap sales.
 - Ketentuan harga: kuantitas kamar/malam/pax, mata uang, pajak, diskon, dan format nomor dokumen.
 
@@ -263,7 +264,7 @@ Ditinjau 30 Oktober 2026; hanya sebagai inspirasi fitur, bukan komitmen mengadop
 ### D. Akses, file, dan widget — prioritas MVP terkait fitur
 
 - Matriks akses mengikuti tenant/property pada bagian 1. Semua pemeriksaan dilakukan di server dan RLS, termasuk download lampiran dan export. Tenant Admin tidak memperoleh hak admin di tenant lain; Property Admin tidak memperoleh hak admin di property lain tanpa assignment tersebut.
-- Lindungi selfie/dokumen melalui storage privat dan URL sementara. Validasi ukuran, ekstensi yang diizinkan, tipe dan signature isi file, nama acak, serta scan file dokumen sebelum dipakai. Render isi email dengan sanitasi dan blokir konten aktif.
+- Lindungi selfie/dokumen melalui storage privat; selfie dibaca melalui route terautentikasi yang memeriksa ulang akses tenant/property tanpa cache bersama. Gunakan URL sementara untuk unduh dokumen bila diperlukan. Validasi ukuran, ekstensi yang diizinkan, tipe dan signature isi file, nama acak, serta scan file dokumen sebelum dipakai. Render isi email dengan sanitasi dan blokir konten aktif.
 - Widget memakai ID publik website, bukan secret CRM. Batasi domain embed, terapkan rate limit dan validasi server; pembatasan domain bukan pengganti autentikasi/otorisasi. Pengunjung hanya dapat membaca percakapannya sendiri melalui token sesi yang tidak mudah ditebak.
 - Tentukan retensi selfie, GPS, pesan, dan dokumen; jelaskan penggunaan lokasi kepada sales dan rekam hanya saat aktivitas yang memerlukannya. Hapus metadata EXIF yang tidak diperlukan setelah koordinat yang dibutuhkan disimpan terstruktur.
 - Simpan audit actor, aksi, objek, waktu, dan perubahan penting dengan akses terbatas. Backup database serta file, dan uji restore; arsip/soft-delete saja bukan backup.

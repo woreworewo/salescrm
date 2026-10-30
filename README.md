@@ -14,12 +14,13 @@ Initial implementation of the approved CRM, not a completed MVP. Scope and busin
 - Opportunity creation, Kanban/table, sales/offering/closing-date filters, overdue/aging indicators, drag-and-drop plus keyboard-accessible select controls.
 - Stage changes with database row locks, expected-version checks and atomic stage history. Lost requires a reason. Won is blocked until agreement/payment verification exists.
 - Follow-up task creation and optimistic completion with failure feedback and version checks.
+- Sales activity feed with server pagination/filters and client timeline; WhatsApp, Direct Call, Sales Visit/Meeting and Email. Visits require a compressed private selfie plus fresh device location. Idempotent draft/upload/finalize flow creates an optional follow-up task atomically without changing pipeline.
 - Forward SQL migrations with RLS, tenant/property/owner access, composite foreign keys, restricted grants and authorized RPCs. Membership tables have no direct browser write grants; authorized changes use guarded administrative RPCs. Stale forms after a property switch are rejected.
 - Explicit, read-only demo. Missing configuration opens setup; failed real queries never fall back to demo.
 
 ## Pending MVP work
 
-Live local Supabase/Auth/SMTP end-to-end verification (Docker missing); client editing, extra PIC management and validated import/deduplication; lead qualification; server pagination; activity logging, selfie/GPS; LOO/LOA generation/versioning/PDF/approval; private file storage; per-property pricing/document/mailbox configuration, CRM outbound mailbox, durable outbox and Trigger.dev; production monitoring and backup/restore procedures. Activities and Documents explicitly show unavailable status. Invitation email is implemented through configured SMTP but has not been sent/tested against a running local stack. CRM greeting/document emailing remains unavailable.
+Live local Supabase/Auth/Storage/SMTP and camera/location end-to-end verification (Docker missing); client editing, extra PIC management and validated import/deduplication; lead qualification; pagination for existing client/opportunity/task queries; LOO/LOA generation/versioning/PDF/approval and document storage; per-property pricing/document/mailbox configuration, CRM outbound mailbox, durable outbox and Trigger.dev; selfie/GPS retention and abandoned-draft cleanup; production monitoring and backup/restore procedures. Documents remain unavailable. Invitation email is implemented through configured SMTP but has not been sent/tested against a running local stack. CRM greeting/document emailing remains unavailable.
 
 Inbound email inbox, live-chat widget, WhatsApp synchronization, integrated e-signatures, campaigns and full offline are later releases.
 
