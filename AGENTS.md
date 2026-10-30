@@ -20,6 +20,9 @@ Read crm-requirements.md before changes. This file defines implementation guardr
 - Files/folders kebab-case, components/types PascalCase, functions/variables camelCase, constants UPPER_SNAKE_CASE. Unit tests live beside logic. No global tests directory.
 - Verify types/build and meaningful changed business rules. Record limits honestly. Do not introduce Redux, microservices, offline sync or speculative abstractions.
 - Maintain .ai_context.md with terse facts, shipped scope, blockers and next actions.
+- Current phase is LOCAL ONLY; cloud staging/provisioning is deferred by user. Follow docs/local-development.md. Do not install Docker, enable Windows virtualization, accept system licensing or reset local data silently. Local seed must enforce loopback API/DB targets and never overwrite .env.local or reset existing fixture passwords.
+- Administration writes use scoped RPCs, expected versions, audit, last-admin/property guards. Property Admin may manage only Sales in its assigned property. Initial tenant bootstrap stays trusted tooling; no global app admin/self-service tenant creation.
+- Invitation creation != sending != acceptance. Verified auth.users email and current issuer authority are required to accept once; never trust user_metadata for roles. Auth service key stays server-only and is used only after caller scope checks for link creation; business RPCs use caller JWT. No raw tokens/passwords in logs, UI admin or tables. Disable Next development action-argument and auth-confirm URL logging.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

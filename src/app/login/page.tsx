@@ -55,6 +55,12 @@ export default function LoginPage() {
               </Link>
             </div>
           )}
+          <Link
+            href="/forgot-password"
+            className="mt-5 inline-block text-sm font-medium text-emerald-800 underline"
+          >
+            Lupa kata sandi?
+          </Link>
         </div>
       </section>
     </main>

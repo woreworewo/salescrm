@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, LogOut, Sprout } from "lucide-react";
+import { ArrowUpRight, LogOut, Sprout, Mail } from "lucide-react";
 import { Navigation } from "./navigation";
 import { signOut } from "@/app/actions";
 import { ACCESS_ROLE_LABELS, type Workspace } from "@/lib/models";
@@ -32,7 +32,10 @@ export function Shell({
         <div className="hidden px-7 pt-5 text-[10px] font-semibold tracking-[.18em] text-slate-400 lg:block">
           WORKSPACE
         </div>
-        <Navigation tenantAdmin={workspace.accessRole === "tenant-admin"} />
+        <Navigation
+          tenantAdmin={workspace.accessRole === "tenant-admin"}
+          propertyAdmin={workspace.accessRole !== "sales"}
+        />
         <div className="mt-auto hidden px-5 pb-5 lg:block">
           <div className="rounded-xl bg-slate-50 p-4">
             <p className="text-xs font-semibold">Satu langkah lebih dekat.</p>
@@ -56,6 +59,13 @@ export function Shell({
             activeId={workspace.property.id}
           />
           <div className="flex items-center gap-3">
+            <Link
+              href="/invitations"
+              className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+              aria-label="Undangan saya"
+            >
+              <Mail size={18} />
+            </Link>
             <span className="flex size-9 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-900">
               {workspace.profile.full_name
                 .split(" ")

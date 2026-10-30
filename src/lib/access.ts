@@ -18,6 +18,8 @@ export async function requireUser() {
     .select("id, full_name")
     .eq("id", user.id)
     .single();
+  if (profileError?.code === "PGRST116" || (!profileError && !profile))
+    redirect("/invitations");
   if (profileError || !profile)
     throw new Error(
       "Profil belum tersedia. Hubungi admin untuk aktivasi akun.",
@@ -34,6 +36,7 @@ export const getAccess = cache(async () => {
       .select("id, tenant_id, name, code, timezone, currency", {
         count: "exact",
       })
+      .eq("active", true)
       .order("name"),
     auth.db.from("tenants").select("id, name", { count: "exact" }),
     auth.db

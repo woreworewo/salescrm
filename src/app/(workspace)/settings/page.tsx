@@ -1,12 +1,13 @@
 import { PageHeading } from "@/components/shell";
 import { getWorkspace } from "@/lib/workspace";
+import Link from "next/link";
 export default async function SettingsPage() {
   const w = await getWorkspace();
   const rows = [
     {
       title: `${w.tenant.name} / ${w.property.name}`,
       status: w.accessRole,
-      detail: `Property aktif: ${w.property.code} · ${w.property.timezone} · ${w.property.currency}. Provisioning membership sementara melalui tooling admin tepercaya.`,
+      detail: `Property aktif: ${w.property.code} · ${w.property.timezone} · ${w.property.currency}. Admin dapat mengelola property, membership dan undangan melalui Administration.`,
     },
     {
       title: "Database & autentikasi",
@@ -46,6 +47,14 @@ export default async function SettingsPage() {
         title="Settings & integrations"
         description="Status koneksi dan kemampuan yang tersedia saat ini."
       />
+      {w.accessRole !== "sales" && (
+        <Link
+          href="/administration"
+          className="mb-5 inline-block text-sm font-semibold text-emerald-800 underline"
+        >
+          Buka Administration →
+        </Link>
+      )}
       <div className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
         {rows.map((row) => (
           <section

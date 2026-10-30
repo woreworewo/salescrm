@@ -6,40 +6,43 @@ Initial implementation of the approved CRM, not a completed MVP. Scope and busin
 
 - Next.js App Router/TypeScript with server-rendered private workspace and responsive Tailwind/shadcn-style components.
 - Supabase cookie sessions, password login, logout, authenticated profile checks and session refresh proxy. No public signup UI.
+- Account-link confirmation, password recovery/update, recipient invitation review/acceptance, and scoped administration UI for property management, memberships, invitation creation/revocation, and sales assignment. Tenant rename/property creation require Tenant Admin. Last active Tenant Admin/property are protected; changes are audited.
+- Local Supabase CLI config, captured test email, guarded setup and idempotent fixtures for two tenants/three properties/five accounts. Docker is required and is not installed by helpers. See [local-development.md](docs/local-development.md).
 - Multi-tenant/multi-property membership, visible organization/property switcher and server-verified context. Tenant Admin, Property Admin and Sales roles are scoped to memberships, never global profile authority.
 - Dashboard calculated from the active property's accessible transactions and tenant-shared client directory; Tenant Admin also has a cross-property portfolio overview. No fabricated production metrics.
 - Client search/list/detail and atomic creation of company plus initial PIC. Schema permits multiple PICs; additional PIC editing UI is pending.
 - Opportunity creation, Kanban/table, sales/offering/closing-date filters, overdue/aging indicators, drag-and-drop plus keyboard-accessible select controls.
 - Stage changes with database row locks, expected-version checks and atomic stage history. Lost requires a reason. Won is blocked until agreement/payment verification exists.
 - Follow-up task creation and optimistic completion with failure feedback and version checks.
-- Forward SQL migrations with RLS, tenant/property/owner access, composite foreign keys, restricted grants and authorized RPCs. Users cannot update memberships or their own role. Stale forms after a property switch are rejected.
+- Forward SQL migrations with RLS, tenant/property/owner access, composite foreign keys, restricted grants and authorized RPCs. Membership tables have no direct browser write grants; authorized changes use guarded administrative RPCs. Stale forms after a property switch are rejected.
 - Explicit, read-only demo. Missing configuration opens setup; failed real queries never fall back to demo.
 
 ## Pending MVP work
 
-Invitation acceptance/password recovery UI; tenant/property/membership provisioning UI, user management and assignment; client editing, extra PIC management and validated import/deduplication; lead qualification; server pagination; activity logging, selfie/GPS; LOO/LOA generation/versioning/PDF/approval; private file storage; per-property pricing/document/mailbox configuration, outbound mailbox, durable outbox and Trigger.dev; production monitoring and backup/restore procedures. Activities and Documents pages explicitly show unavailable status. No email is sent by this revision.
+Live local Supabase/Auth/SMTP end-to-end verification (Docker missing); client editing, extra PIC management and validated import/deduplication; lead qualification; server pagination; activity logging, selfie/GPS; LOO/LOA generation/versioning/PDF/approval; private file storage; per-property pricing/document/mailbox configuration, CRM outbound mailbox, durable outbox and Trigger.dev; production monitoring and backup/restore procedures. Activities and Documents explicitly show unavailable status. Invitation email is implemented through configured SMTP but has not been sent/tested against a running local stack. CRM greeting/document emailing remains unavailable.
 
 Inbound email inbox, live-chat widget, WhatsApp synchronization, integrated e-signatures, campaigns and full offline are later releases.
 
 ## Local development
 
-Requires Node.js 24 LTS and npm. Use the committed lockfile.
+Current priority is local development; cloud staging/deployment is deferred. Requires Node.js 24 LTS, npm and Docker Desktop for the full local Supabase stack. Use the committed lockfile and [local setup guide](docs/local-development.md).
 
 ```powershell
 npm ci
-Copy-Item .env.example .env.local
+npm run local:setup
+npm run local:seed
 npm run dev
 ```
 
-Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to your development project's values. No service-role key is needed or used by the app. Never expose or commit service-role keys.
+The setup helper writes ignored `.env.local` only if it does not exist, using local CLI status. Core CRM uses the user's JWT. Invitation delivery additionally requires a server-only Supabase service-role/secret key and SMTP; it never exposes that key to the browser. Never commit secrets. Without Docker, preview the read-only UI by setting `CRM_DEMO_MODE=true` in a temporary shell/environment and running `npm run dev`; this does not enable business writes.
 
 For a standalone UI preview, set `CRM_DEMO_MODE=true` in `.env.local` and restart. All records are synthetic and business writes are blocked in UI and actions. The property switcher changes a UI preference only; Jakarta and Bali have distinct opportunities/tasks and shared demo clients. Set the flag back to `false` for real authentication/data. Vercel production rejects demo mode; on other hosting the operator must keep it disabled. Do not use production data for preview.
 
 ## Supabase setup
 
 1. Use separate projects for development, staging and production. Singapore is the proposed primary region, subject to the organization's data requirements.
-2. Apply both numbered `.sql` files in `supabase/migrations` in order using Supabase SQL Editor or migration tooling. On an existing foundation deployment, apply only `202610300002-tenancy.sql`. Do not edit/reapply migration 001 or run against an unrelated schema. Migration 002 is transactional, preserves legacy business data in one `Migrated organization` / `Main property`, and converts old admins to Tenant Admin in that organization only. Fresh databases get no default tenant. Review and rename the legacy organization/property before operational use; unrelated legacy customers must be explicitly mapped rather than guessed into tenants.
-3. Disable public signups in Auth settings. Account invitation and activation must be controlled by the admin; invitation acceptance screens are not implemented yet. For development, provision a test Auth user with a password through trusted Supabase admin tooling.
+2. Apply all numbered `.sql` migrations in order; existing installations apply only pending migrations. Migration 003 adds scoped administration/invitations/audit, not cloud resources. Do not edit/reapply migration 001 or run against an unrelated schema. Migration 002 preserves legacy single-organization data as described in the scope document. Fresh databases get no default tenant; use the local seed or trusted bootstrap below.
+3. Disable public signups in Auth settings. The checked-in local config does so and configures captured SMTP plus the recovery email template. New account links are issued only after an authorized invitation request. Auth user creation and tenant membership are separate: verified recipient acceptance grants membership.
 4. Provision the profile, tenant, property and memberships with trusted admin tooling. For a fresh development database, replace the Auth UUID and names in this SQL Editor example (each execution creates a new tenant/property):
 
 ```sql
@@ -59,7 +62,7 @@ $$;
 commit;
 ```
 
-Tenant Admin needs no per-property membership within its own tenant. For a sales user, create its identity profile, then a `tenant_memberships` row with `role='member'` and a `property_memberships` row using the matching tenant/property and `role='sales'`. Use `property-admin` on the property membership for local administrators. The same user may have different roles in different tenants/properties. Deactivate the appropriate membership using `active=false` to revoke access while retaining historical foreign-key references. Browser roles have no membership/provisioning write grants. Never expose a service key in a client component.
+Tenant Admin needs no per-property membership within its own tenant. After trusted bootstrap, use Administration to invite users, manage membership or property status, and assign transactions. Property Admin can manage Sales in its assigned property, without granting/restoring privileged roles. Tenant Admin can restore tenant memberships and assign property admins; the last active Tenant Admin cannot be removed. No direct browser writes to membership/provisioning tables are granted. Never expose a service key in a client component.
 
 5. Set application env vars, restart, then log in. Users without an accessible property get the access/setup screen. Verify tenant, property and owner isolation with multiple real users before operational use.
 
@@ -67,7 +70,7 @@ Tenant Admin needs no per-property membership within its own tenant. For a sales
 
 - One deployment supports multiple isolated tenants. Companies and contacts are intentionally readable by every active member of their tenant, regardless of property/creator. Transactions are not shared by that rule.
 - Tenant Admin sees all active properties/transactions within that tenant, including the portfolio overview. Property Admin sees all owners' transactions only in the property where it has that role. Sales sees its own transactions only within assigned properties. A role in one tenant/property never grants that role in another.
-- Profiles are global identity, with no role column. Other users' names are visible only when sharing an active tenant; workspace directory queries explicitly scope to the active tenant. Membership management remains trusted admin tooling until its UI ships.
+- Profiles are global identity, with no role column. Directory queries scope to the active tenant. Tenant Admin can also read inactive tenant members' names to restore their access; ordinary members only see identities sharing an active tenant. Initial organization bootstrap remains trusted tooling; subsequent scoped administration has a UI.
 - The property cookie is an untrusted selector, not authorization. Every request resolves active DB membership; RLS remains effective for direct API/RPC calls. Missing/revoked selection leads to the access screen instead of silently switching organizations. Every form/action includes its original property and server actions reject stale context after another tab switches property. RPCs also require the record's actual property. Switching returns to Overview and discards unsubmitted local form state.
 - Opportunity/task/client queries explicitly scope to the selected tenant/property in addition to RLS. Tenant Admin's portfolio explicitly scopes to the selected tenant. No data is cached across users/tenants. Responses exceeding provider row limits fail explicitly rather than displaying incomplete totals; server pagination is still pending.
 - Future activity, files, LOO/LOA, mailboxes and jobs must carry the validated tenant/property. These modules are not yet enabled; no storage/job integration is claimed as tenant-ready. File policies and job reauthorization must ship with them.
@@ -85,7 +88,7 @@ npm run lint
 npm run build
 ```
 
-Tests live beside their logic/migration. PGlite runs actual PostgreSQL migrations/RLS with a minimal mock Auth schema: legacy backfill, shared clients within tenant, tenant/property/owner isolation, roles differing across memberships, forbidden membership escalation, cross-tenant foreign keys, membership revocation, stale record property RPC arguments, atomic company/PIC creation, version conflicts, stage history, Lost validation and Won blocking. Pure tests cover invalid/revoked property selectors and stale form context. This does not replace live Supabase/Auth integration testing. Real provider/email/storage/Trigger.dev behavior has not been tested because these services are not configured.
+Tests live beside their logic/migration. PGlite runs PostgreSQL migrations/RLS with a minimal mock Auth schema: tenant/property/owner isolation, scoped roles/revocation, composite foreign keys, admin-last/property-last guards, version conflicts, assignment, verified recipient-only invitation acceptance, single use, expired/revoked/unauthorized invitations, and delivery claim identity/cooldown. Pure tests cover local-only setup guards, credential newline injection, fixed auth origins/types, password confirmation and stale property context. Full Supabase/Auth/SMTP integration is unverified until Docker is installed and local UAT is run; cloud services/storage/Trigger.dev are not configured.
 
 ## Hosting plan
 

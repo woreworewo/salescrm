@@ -20,7 +20,13 @@ const ITEMS = [
   { href: "/documents", label: "Documents", icon: FileText },
   { href: "/settings", label: "Settings", icon: Settings2 },
 ];
-export function Navigation({ tenantAdmin }: { tenantAdmin: boolean }) {
+export function Navigation({
+  tenantAdmin,
+  propertyAdmin,
+}: {
+  tenantAdmin: boolean;
+  propertyAdmin: boolean;
+}) {
   const pathname = usePathname();
   return (
     <nav
@@ -29,6 +35,15 @@ export function Navigation({ tenantAdmin }: { tenantAdmin: boolean }) {
     >
       {[
         ...ITEMS,
+        ...(propertyAdmin
+          ? [
+              {
+                href: "/administration",
+                label: "Administration",
+                icon: Settings2,
+              },
+            ]
+          : []),
         ...(tenantAdmin
           ? [
               {

@@ -4,6 +4,7 @@ import { getAccess } from "@/lib/access";
 import { isDemo } from "@/lib/supabase/server";
 import { signOut } from "@/app/actions";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export default async function AccessPage() {
@@ -29,6 +30,9 @@ export default async function AccessPage() {
           membership organisasi dan property.
         </p>
       )}
+      <Link href="/invitations" className="text-emerald-800 underline">
+        Periksa undangan saya
+      </Link>
       <form action={signOut}>
         <Button variant="outline" type="submit">
           Keluar
