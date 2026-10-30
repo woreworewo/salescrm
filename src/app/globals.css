@@ -1,0 +1,78 @@
+@import "tailwindcss";
+:root {
+  --background: #f6f7f9;
+  --foreground: #18232f;
+}
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: Arial, Helvetica, sans-serif;
+}
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+}
+button,
+a,
+input,
+select,
+textarea,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled),
+summary {
+  cursor: pointer;
+}
+:is(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid #047857;
+  outline-offset: 3px;
+}
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #d8dfe5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: white;
+  font-size: 14px;
+}
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #065f46;
+}
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+label > :is(input, select, textarea) {
+  margin-top: 7px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+th {
+  padding: 13px 20px;
+  background: #fafbfc;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+td {
+  padding: 18px 20px;
+  border-top: 1px solid #edf0f3;
+}
+::selection {
+  background: #d1fae5;
+}
