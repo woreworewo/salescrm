@@ -13,7 +13,11 @@ export default async function TasksPage() {
       />
       <div className="grid items-start gap-6 xl:grid-cols-[1.6fr_1fr]">
         <TaskList workspace={w} />
-        <TaskForm companies={w.companies} demo={w.demo} />
+        <TaskForm
+          companies={w.companies}
+          demo={w.demo}
+          propertyId={w.property.id}
+        />
       </div>
     </>
   );

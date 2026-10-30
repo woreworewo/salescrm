@@ -19,7 +19,7 @@ export default async function ClientsPage({
       <PageHeading
         eyebrow="Relationships"
         title="Clients"
-        description="Semua perusahaan dan PIC, dengan konteks yang Anda butuhkan."
+        description="Directory perusahaan dan PIC bersama dalam organisasi aktif. Transaksi tetap mengikuti akses property."
         action={
           <Button asChild>
             <Link href="/clients/new">

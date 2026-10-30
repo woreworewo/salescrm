@@ -13,13 +13,20 @@ import { Button } from "@/components/ui/button";
 import { getWorkspace } from "@/lib/workspace";
 import { dateLabel, money, today } from "@/lib/utils";
 import { STAGES, STAGE_LABELS } from "@/lib/models";
-export default async function Dashboard() {
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ context?: string }>;
+}) {
   const w = await getWorkspace();
+  const { context } = await searchParams;
   const open = w.opportunities.filter(
     (o) => !["won", "lost"].includes(o.stage),
   );
   const pending = w.tasks.filter((t) => !t.completed);
-  const overdue = pending.filter((t) => t.due_date < today());
+  const overdue = pending.filter(
+    (t) => t.due_date < today(w.property.timezone),
+  );
   const metrics = [
     {
       label: "Total clients",
@@ -48,6 +55,14 @@ export default async function Dashboard() {
   ];
   return (
     <>
+      {context === "updated" && (
+        <p
+          role="status"
+          className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900"
+        >
+          Workspace ditampilkan untuk {w.tenant.name} / {w.property.name}.
+        </p>
+      )}
       <PageHeading
         eyebrow="Your sales, in focus"
         title={`Selamat datang, ${w.profile.full_name.split(" ")[0]}`}
@@ -142,9 +157,11 @@ export default async function Dashboard() {
                   {w.companies.find((c) => c.id === task.company_id)?.name}
                 </p>
                 <p
-                  className={`mt-2 text-[11px] ${task.due_date < today() ? "text-rose-700" : "text-emerald-700"}`}
+                  className={`mt-2 text-[11px] ${task.due_date < today(w.property.timezone) ? "text-rose-700" : "text-emerald-700"}`}
                 >
-                  {task.due_date < today() ? "Overdue · " : "Tenggat · "}
+                  {task.due_date < today(w.property.timezone)
+                    ? "Overdue · "
+                    : "Tenggat · "}
                   {dateLabel(task.due_date)}
                 </p>
               </Link>

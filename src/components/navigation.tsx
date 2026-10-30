@@ -20,14 +20,25 @@ const ITEMS = [
   { href: "/documents", label: "Documents", icon: FileText },
   { href: "/settings", label: "Settings", icon: Settings2 },
 ];
-export function Navigation() {
+export function Navigation({ tenantAdmin }: { tenantAdmin: boolean }) {
   const pathname = usePathname();
   return (
     <nav
       aria-label="Navigasi utama"
       className="flex gap-1 overflow-x-auto p-3 lg:flex-col lg:px-4 lg:py-6"
     >
-      {ITEMS.map(({ href, label, icon: Icon }) => {
+      {[
+        ...ITEMS,
+        ...(tenantAdmin
+          ? [
+              {
+                href: "/portfolio",
+                label: "Property overview",
+                icon: Building2,
+              },
+            ]
+          : []),
+      ].map(({ href, label, icon: Icon }) => {
         const active =
           href === "/" ? pathname === href : pathname.startsWith(href);
         return (

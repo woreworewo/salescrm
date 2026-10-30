@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ArrowUpRight, LogOut, Sprout } from "lucide-react";
 import { Navigation } from "./navigation";
 import { signOut } from "@/app/actions";
-import type { Workspace } from "@/lib/models";
+import { ACCESS_ROLE_LABELS, type Workspace } from "@/lib/models";
+import { PropertySwitcher } from "./property-switcher";
 export function Shell({
   workspace,
   children,
@@ -31,7 +32,7 @@ export function Shell({
         <div className="hidden px-7 pt-5 text-[10px] font-semibold tracking-[.18em] text-slate-400 lg:block">
           WORKSPACE
         </div>
-        <Navigation />
+        <Navigation tenantAdmin={workspace.accessRole === "tenant-admin"} />
         <div className="mt-auto hidden px-5 pb-5 lg:block">
           <div className="rounded-xl bg-slate-50 p-4">
             <p className="text-xs font-semibold">Satu langkah lebih dekat.</p>
@@ -49,10 +50,11 @@ export function Shell({
       </aside>
       <div className="min-w-0">
         <header className="flex min-h-20 flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-4 lg:px-9">
-          <div className="text-xs text-slate-400">
-            Workspace <span className="mx-2">/</span>
-            <span className="font-medium text-slate-700">Sales CRM</span>
-          </div>
+          <PropertySwitcher
+            key={workspace.property.id}
+            options={workspace.propertyOptions}
+            activeId={workspace.property.id}
+          />
           <div className="flex items-center gap-3">
             <span className="flex size-9 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-900">
               {workspace.profile.full_name
@@ -66,7 +68,7 @@ export function Shell({
                 {workspace.profile.full_name}
               </p>
               <p className="mt-0.5 text-[11px] capitalize text-slate-400">
-                {workspace.demo ? "Demo workspace" : workspace.profile.role}
+                {ACCESS_ROLE_LABELS[workspace.accessRole]}
               </p>
             </div>
             {!workspace.demo && (
@@ -85,10 +87,18 @@ export function Shell({
         {workspace.demo && (
           <div className="border-b border-amber-200 bg-amber-50 px-5 py-2 text-xs text-amber-900 lg:px-9">
             <strong>DEMO · HANYA BACA</strong> — seluruh client dan nilai
-            merupakan data contoh. Perubahan dinonaktifkan.
+            merupakan data contoh. Perubahan data dinonaktifkan.
           </div>
         )}
-        <main id="main-content" className="mx-auto max-w-[1600px] p-5 lg:p-9">
+        <main
+          key={workspace.property.id}
+          id="main-content"
+          className="mx-auto max-w-[1600px] p-5 lg:p-9"
+        >
+          <p className="mb-5 text-xs text-slate-500">
+            <strong>{workspace.tenant.name}</strong> / {workspace.property.name}{" "}
+            · {workspace.property.timezone}
+          </p>
           {children}
         </main>
       </div>

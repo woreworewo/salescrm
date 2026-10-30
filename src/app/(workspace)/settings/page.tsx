@@ -4,15 +4,21 @@ export default async function SettingsPage() {
   const w = await getWorkspace();
   const rows = [
     {
-      title: "Database & autentikasi",
-      status: w.demo ? "Demo hanya-baca" : "Terhubung ke Supabase",
-      detail: "Data privat mengikuti akses admin atau owner sales.",
+      title: `${w.tenant.name} / ${w.property.name}`,
+      status: w.accessRole,
+      detail: `Property aktif: ${w.property.code} · ${w.property.timezone} · ${w.property.currency}. Provisioning membership sementara melalui tooling admin tepercaya.`,
     },
     {
-      title: "Mailbox perusahaan",
+      title: "Database & autentikasi",
+      status: w.demo ? "Demo hanya-baca" : "Terhubung ke Supabase",
+      detail:
+        "Client/PIC bersama dalam tenant; transaksi dibatasi membership property dan owner sales.",
+    },
+    {
+      title: "Mailbox property",
       status: "Belum dihubungkan",
       detail:
-        "Greeting dan pengiriman PDF belum tersedia. Provider email perlu ditentukan.",
+        "Greeting dan pengiriman PDF belum tersedia. Provider dan mailbox property perlu dikonfigurasi sebelum pengiriman diaktifkan.",
     },
     {
       title: "Background jobs",

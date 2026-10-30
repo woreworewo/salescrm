@@ -4,7 +4,7 @@
 
 Disetujui: aplikasi modular Next.js App Router + TypeScript/Node.js; Tailwind CSS + shadcn/ui; Supabase PostgreSQL/Auth/Storage privat; Trigger.dev untuk background job; Vercel untuk aplikasi. Region utama diusulkan Singapura, dengan compute dekat database. Akun/region/paket final belum diprovisikan. Development, staging dan production harus terpisah; staging tidak memakai data atau secret production.
 
-MVP peluncuran awal: login undangan dan akses admin/sales; perusahaan dan banyak PIC; import dengan validasi/deduplikasi; Kanban dan tabel peluang; aktivitas/selfie/GPS kunjungan; task follow-up; LOO→LOA dengan PDF/versi/bukti persetujuan; greeting dan pengiriman dokumen lewat satu provider email; dashboard dasar; tombol Maps/WhatsApp.
+MVP peluncuran awal: fondasi multi-tenant/multi-property; login undangan dan role Tenant Admin/Property Admin/Sales; perusahaan dan banyak PIC; import dengan validasi/deduplikasi; Kanban dan tabel peluang; aktivitas/selfie/GPS kunjungan; task follow-up; LOO→LOA dengan PDF/versi/bukti persetujuan; greeting dan pengiriman dokumen lewat satu provider email dengan mailbox per property; dashboard dasar; tombol Maps/WhatsApp.
 
 Rilis lanjutan: inbox email masuk, widget live chat, sinkronisasi WhatsApp, tanda tangan elektronik terintegrasi, campaign, automasi kompleks, forecasting/analitik lanjutan dan offline penuh. Kebutuhan ini tetap tercatat sebagai backlog produk, bukan syarat MVP awal. Bagian fitur di bawah menjelaskan target produk; batas rilis ini mengatur prioritasnya.
 
@@ -13,6 +13,20 @@ UI/UX: dashboard bisnis berlatar netral dengan satu aksen brand, tabel mudah dip
 Aturan agen: ikuti AGENTS.md; bedakan fitur implemented, belum diverifikasi, dan pending pada README. Infrastruktur belum terhubung harus menampilkan setup state, bukan data demo otomatis. Demo read-only hanya pada mode eksplisit yang diberi label; database tetap sumber kebenaran. Bangun bertahap dengan vertical slice yang diuji, bukan mengklaim seluruh MVP selesai dari tampilan saja.
 
 ## 1. Database client
+
+### Tenant dan property — fondasi MVP disetujui
+
+- Tenant/organisasi adalah batas isolasi antarperusahaan atau grup hotel. Satu tenant memiliki banyak property/hotel/cabang. Pengguna dapat menjadi anggota beberapa tenant dan beberapa property dengan role berbeda.
+- Profil pengguna hanya menyimpan identitas. Tenant membership memiliki role tenant-admin/member; property membership memiliki role property-admin/sales. Tidak ada global admin dalam aplikasi.
+- Tenant Admin dapat mengakses semua property aktif dalam tenant miliknya serta ringkasan lintas-property. Property Admin mengelola transaksi seluruh sales pada property yang ditugaskan. Sales mengakses transaksi miliknya pada property yang ditugaskan.
+- Perusahaan/PIC dibagikan kepada anggota aktif dalam tenant yang sama; ini aturan bisnis yang disengaja. Kebutuhan pembatasan client tertentu di dalam tenant memerlukan kebijakan terpisah. Data perusahaan/PIC tidak pernah dibagikan antar-tenant secara otomatis.
+- Peluang, aktivitas, task, LOO/LOA, booking, pembayaran, mailbox, percakapan dan assignment terikat tenant/property. Semua relasi client, transaksi dan property harus berasal dari tenant yang sama melalui composite foreign key, bukan validasi UI saja.
+- Identitas/branding pengirim, harga, nomor dokumen, template, ketentuan dan mailbox dikonfigurasi per property saat modul terkait dibangun. MVP memakai IDR; timezone awal per property mendukung WIB/WITA/WIT. Konfigurasi pricing/dokumen/mailbox belum diimplementasikan pada fondasi ini.
+- Property switcher menampilkan organisasi dan property aktif, hanya menawarkan akses sah, dan mengarahkan kembali ke Overview setelah pergantian. Form yang belum tersimpan tidak ikut berpindah. Form lama dari tab lain ditolak bila konteksnya berbeda dari property aktif.
+- Cookie property hanyalah preferensi UI. Server membaca ulang membership aktif dan database menerapkan RLS. Membership property atau property nonaktif menutup akses transaksi property tersebut. Membership tenant atau tenant nonaktif juga menutup directory bersama dalam tenant, tanpa menunggu login ulang. Cache privat, export, file, pencarian dan pekerjaan background wajib mengikuti scope yang sama.
+- Migrasi dari fondasi satu organisasi memakai forward migration: data lama, PIC, peluang, task dan riwayat masuk satu organisasi/property awal; role admin lama menjadi Tenant Admin hanya untuk organisasi tersebut. Instalasi baru tidak membuat tenant/data demo otomatis. Pengelompokan data lama harus ditinjau sebelum migrasi production.
+- Fondasi implementasi mencakup schema/RLS, scope query dan mutasi, switcher, serta ringkasan Tenant Admin. Provisioning tenant/property/membership sementara melalui tooling admin tepercaya; UI provisioning/invitation masih pending. Billing SaaS dan domain khusus tenant adalah rilis lanjutan.
+- Tes wajib: penolakan lintas-tenant/property, role berbeda per membership, self-escalation, FK campur tenant, owner yang aksesnya dicabut, RPC tanpa otorisasi, form stale setelah switch, dan preservasi data lama.
 
 Seluruh field sumber harus tersedia:
 
@@ -51,7 +65,7 @@ Pipeline melekat pada peluang penjualan agar satu client dapat memiliki beberapa
 - Satu board dengan kolom Discovery, Proposal Sent, Negotiation, Won, dan Lost; setiap kartu mewakili satu peluang transaksi.
 - Kartu menampilkan perusahaan, nama peluang, estimasi nilai, sales penanggung jawab, target closing, dan follow-up berikutnya.
 - Berikan penanda follow-up overdue dan aging tahap; ambang aging dapat dikonfigurasi.
-- Filter berdasarkan sales, periode target closing, dan jenis offering. Sediakan tampilan tabel untuk pencarian dan pengurutan data.
+- Board selalu dibatasi property aktif. Filter berdasarkan sales, periode target closing, dan jenis offering. Sediakan tampilan tabel untuk pencarian dan pengurutan data.
 - Perpindahan tahap tersedia melalui drag-and-drop serta menu yang dapat digunakan dengan keyboard. Validasi hak akses dan syarat transisi dilakukan di server; kegagalan mengembalikan kartu ke tahap sebelumnya dan menampilkan alasan.
 - Lost wajib disertai alasan. Won mengikuti syarat komersial pada bagian 7; perpindahan kartu tidak boleh melewati persyaratan tersebut.
 - Pada mobile, setiap kolom tetap dapat diakses dan aksi pindah tahap tersedia tanpa drag. Inbox menggunakan daftar percakapan dengan status dan assignment.
@@ -134,6 +148,8 @@ Template isi awal LOO:
 
 ## 8. Entitas data yang diusulkan
 
+Fondasi multi-tenancy menambahkan `tenants`, `properties`, `tenant-memberships`, dan `property-memberships`. `profiles` hanya identitas pengguna. Perusahaan/PIC membawa tenant; seluruh transaksi dan riwayat membawa tenant/property dengan composite foreign key dan RLS. Daftar entitas modul berikut mengikuti scope tersebut.
+
 | Entitas                      | Fungsi                                                                            |
 | ---------------------------- | --------------------------------------------------------------------------------- |
 | companies                    | Identitas, alamat, jenis account, owner sales                                     |
@@ -161,7 +177,7 @@ Nama di atas bersifat konseptual; penamaan tabel mengikuti konvensi database saa
 
 ## 9. Usulan tahapan pengerjaan
 
-1. Fondasi: autentikasi, hak akses admin/sales, database client/PIC, import data dengan preview/deduplikasi, detail client, tombol Maps/WhatsApp. Uji koneksi provider email sejak fase ini untuk memvalidasi kelayakan integrasi.
+1. Fondasi: autentikasi, tenant/property/membership dan role terstruktur, database client/PIC tenant bersama, import data dengan preview/deduplikasi, detail client, tombol Maps/WhatsApp. Uji koneksi provider email sejak fase ini untuk memvalidasi kelayakan integrasi.
 2. Sales: aktivitas, selfie terkompresi, GPS, peluang/pipeline dengan Kanban dan tabel, follow-up.
 3. Dokumen: template/upload LOO, generate LOA dari versi final, perhitungan, preview, konfirmasi ulang, pengiriman greeting/PDF, versi dan verifikasi bukti persetujuan.
 4. Inbox: integrasi email masuk/keluar, widget live chat, assignment dan balasan.
@@ -182,7 +198,7 @@ Tahapan ini tidak menghapus kebutuhan pada fase berikutnya. Integrasi eksternal 
 - Persetujuan client merujuk versi tertentu dan bukti terverifikasi; pengiriman saja tidak mengubah dokumen menjadi Accepted/Agreed atau peluang menjadi Won.
 - Status pembayaran dan booking dapat diverifikasi melalui bukti/referensi yang tercatat; perubahan menjadi Won memvalidasi LOA dan syarat deposit/kredit di server.
 - Email eksternal dan pesan widget benar-benar masuk ke dashboard, dapat di-assign, dan balasannya sampai ke kanal asal.
-- Admin dapat mengelola assignment; akses sales terhadap data dibatasi sesuai kebijakan yang disepakati.
+- Tenant Admin dan Property Admin mengelola assignment sesuai cakupannya; akses sales terhadap transaksi dibatasi owner dan membership property. Directory perusahaan/PIC bersama dalam tenant aktif.
 - Tampilan responsif, dapat digunakan dengan keyboard, memiliki fokus terlihat, skeleton saat fetching, serta feedback langsung untuk setiap mutasi.
 - Database menjadi sumber kebenaran. Gunakan Next.js App Router/RSC dan caching native; fetching client jika perlu memakai SWR/React Query. State lokal memakai useState/useReducer; Zustand hanya jika diperlukan, tanpa Redux.
 - File/folder kebab-case; tes unit bila dibutuhkan ditempatkan di sebelah logikanya.
@@ -242,7 +258,7 @@ Ditinjau 30 Oktober 2026; hanya sebagai inspirasi fitur, bukan komitmen mengadop
 
 ### D. Akses, file, dan widget — prioritas MVP terkait fitur
 
-- Matriks akses awal: admin mengelola data/assignment/integrasi; sales mengakses client, peluang, dan percakapan dalam cakupannya. Peran manager ditambahkan bila diperlukan. Semua pemeriksaan dilakukan di server, termasuk download lampiran dan export.
+- Matriks akses mengikuti tenant/property pada bagian 1. Semua pemeriksaan dilakukan di server dan RLS, termasuk download lampiran dan export. Tenant Admin tidak memperoleh hak admin di tenant lain; Property Admin tidak memperoleh hak admin di property lain tanpa assignment tersebut.
 - Lindungi selfie/dokumen melalui storage privat dan URL sementara. Validasi ukuran, ekstensi yang diizinkan, tipe dan signature isi file, nama acak, serta scan file dokumen sebelum dipakai. Render isi email dengan sanitasi dan blokir konten aktif.
 - Widget memakai ID publik website, bukan secret CRM. Batasi domain embed, terapkan rate limit dan validasi server; pembatasan domain bukan pengganti autentikasi/otorisasi. Pengunjung hanya dapat membaca percakapannya sendiri melalui token sesi yang tidak mudah ditebak.
 - Tentukan retensi selfie, GPS, pesan, dan dokumen; jelaskan penggunaan lokasi kepada sales dan rekam hanya saat aktivitas yang memerlukannya. Hapus metadata EXIF yang tidak diperlukan setelah koordinat yang dibutuhkan disimpan terstruktur.

@@ -60,6 +60,7 @@ export function PipelineBoard({ workspace: w }: { workspace: Workspace }) {
       optimisticMove({ id: opportunity.id, stage });
       try {
         const result = await moveOpportunity({
+          property_id: w.property.id,
           id: opportunity.id,
           stage,
           version: opportunity.version,
@@ -226,7 +227,8 @@ export function PipelineBoard({ workspace: w }: { workspace: Workspace }) {
                         (c) => c.id === o.company_id,
                       );
                       const active = !["won", "lost"].includes(o.stage);
-                      const overdue = active && o.follow_up_date < today();
+                      const overdue =
+                        active && o.follow_up_date < today(w.property.timezone);
                       const aging =
                         active &&
                         Date.now() - new Date(o.stage_entered_at).getTime() >

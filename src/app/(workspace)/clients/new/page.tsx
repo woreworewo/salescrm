@@ -10,7 +10,7 @@ export default async function NewClient() {
         title="Tambah client"
         description="Mulai dari perusahaan dan PIC utama. Kode client dibuat otomatis."
       />
-      <CompanyForm demo={w.demo} />
+      <CompanyForm demo={w.demo} propertyId={w.property.id} />
     </>
   );
 }

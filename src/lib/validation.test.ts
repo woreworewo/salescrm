@@ -62,6 +62,18 @@ test("opportunity rejects invalid money and dates", () => {
 });
 
 test("stage transitions require valid version, lost reason and commercial verification", () => {
+  const valid = {
+    id: "00000000-0000-4000-8000-000000000001",
+    property_id: "00000000-0000-4000-8000-000000000002",
+    stage: "negotiation",
+    version: 1,
+    reason: "",
+  };
+  assert.equal(transitionSchema.safeParse(valid).success, true);
+  assert.equal(
+    transitionSchema.safeParse({ ...valid, property_id: undefined }).success,
+    false,
+  );
   assert.match(transitionError("won", "")!, /LOA/);
   assert.match(transitionError("lost", " ")!, /alasan/);
   assert.equal(transitionError("lost", "Budget declined"), null);

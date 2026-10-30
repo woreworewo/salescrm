@@ -112,7 +112,7 @@ export default async function ClientDetail({
         <div className="space-y-6">
           <section className="rounded-xl border border-slate-200 bg-white p-6">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold">Peluang transaksi</h2>
+              <h2 className="font-semibold">Peluang · {w.property.name}</h2>
               <Link
                 href="/pipeline/new"
                 className="text-xs font-semibold text-emerald-800"

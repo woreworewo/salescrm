@@ -22,9 +22,9 @@ export function dateLabel(value: string | null) {
     : "Belum ditentukan";
 }
 
-export function today() {
+export function today(timeZone = "Asia/Jakarta") {
   return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Jakarta",
+    timeZone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

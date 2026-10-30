@@ -11,7 +11,11 @@ export default async function NewOpportunity() {
         description="Tentukan client, estimasi nilai, dan tindak lanjut pertama."
       />
       {w.companies.length ? (
-        <OpportunityForm companies={w.companies} demo={w.demo} />
+        <OpportunityForm
+          companies={w.companies}
+          demo={w.demo}
+          propertyId={w.property.id}
+        />
       ) : (
         <EmptyState
           title="Tambahkan client terlebih dahulu"

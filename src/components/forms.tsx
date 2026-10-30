@@ -49,10 +49,17 @@ function Field({
   );
 }
 
-export function CompanyForm({ demo }: { demo: boolean }) {
+export function CompanyForm({
+  demo,
+  propertyId,
+}: {
+  demo: boolean;
+  propertyId: string;
+}) {
   const [state, action, pending] = useActionState(createCompany, INITIAL_STATE);
   return (
     <form action={action} className="max-w-4xl space-y-6">
+      <input type="hidden" name="property_id" value={propertyId} />
       <Feedback state={state} />
       <fieldset
         disabled={demo || pending}
@@ -110,9 +117,11 @@ export function CompanyForm({ demo }: { demo: boolean }) {
 export function OpportunityForm({
   companies,
   demo,
+  propertyId,
 }: {
   companies: Company[];
   demo: boolean;
+  propertyId: string;
 }) {
   const [state, action, pending] = useActionState(
     createOpportunity,
@@ -123,6 +132,7 @@ export function OpportunityForm({
       action={action}
       className="max-w-3xl space-y-5 rounded-xl border border-slate-200 bg-white p-6"
     >
+      <input type="hidden" name="property_id" value={propertyId} />
       <Feedback state={state} />
       <fieldset
         disabled={demo || pending}
@@ -202,9 +212,11 @@ export function OpportunityForm({
 export function TaskForm({
   companies,
   demo,
+  propertyId,
 }: {
   companies: Company[];
   demo: boolean;
+  propertyId: string;
 }) {
   const [state, action, pending] = useActionState(createTask, INITIAL_STATE);
   return (
@@ -212,6 +224,7 @@ export function TaskForm({
       action={action}
       className="space-y-5 rounded-xl border border-slate-200 bg-white p-5"
     >
+      <input type="hidden" name="property_id" value={propertyId} />
       <h2 className="font-semibold">Task baru</h2>
       <Feedback state={state} />
       <fieldset disabled={demo || pending} className="space-y-4">

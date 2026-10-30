@@ -22,8 +22,8 @@ export default function SetupPage() {
         </li>
         <li>Isi URL dan publishable key pada environment aplikasi.</li>
         <li>
-          Undang pengguna, aktifkan profil admin/sales, dan nonaktifkan public
-          signup.
+          Undang pengguna, aktifkan membership tenant/property, dan nonaktifkan
+          public signup.
         </li>
         <li>
           Restart aplikasi, lalu masuk menggunakan akun yang sudah diaktifkan.

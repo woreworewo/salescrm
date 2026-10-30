@@ -34,6 +34,7 @@ export function TaskList({ workspace: w }: { workspace: Workspace }) {
                   try {
                     setFeedback(
                       await completeTask({
+                        property_id: w.property.id,
                         id: task.id,
                         version: task.version,
                         completed,
@@ -62,11 +63,11 @@ export function TaskList({ workspace: w }: { workspace: Workspace }) {
                 {w.companies.find((c) => c.id === task.company_id)?.name}
               </Link>
               <p
-                className={`mt-3 text-xs ${!task.completed && task.due_date < today() ? "text-rose-700" : "text-slate-400"}`}
+                className={`mt-3 text-xs ${!task.completed && task.due_date < today(w.property.timezone) ? "text-rose-700" : "text-slate-400"}`}
               >
                 {task.completed
                   ? "Selesai · "
-                  : task.due_date < today()
+                  : task.due_date < today(w.property.timezone)
                     ? "Overdue · "
                     : "Tenggat · "}
                 {dateLabel(task.due_date)}

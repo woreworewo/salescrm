@@ -16,10 +16,29 @@ export const STAGE_LABELS: Record<Stage, string> = {
 export type Profile = {
   id: string;
   full_name: string;
-  role: "admin" | "sales";
+};
+export type AccessRole = "tenant-admin" | "property-admin" | "sales";
+export const ACCESS_ROLE_LABELS: Record<AccessRole, string> = {
+  "tenant-admin": "Tenant Admin",
+  "property-admin": "Property Admin",
+  sales: "Sales",
+};
+export type Tenant = { id: string; name: string };
+export type Property = {
+  id: string;
+  tenant_id: string;
+  name: string;
+  code: string;
+  timezone: "Asia/Jakarta" | "Asia/Makassar" | "Asia/Jayapura";
+  currency: "IDR";
+};
+export type PropertyOption = Property & {
+  tenant_name: string;
+  access_role: AccessRole;
 };
 export type Company = {
   id: string;
+  tenant_id: string;
   code: string;
   name: string;
   address: string;
@@ -32,6 +51,7 @@ export type Company = {
 };
 export type Contact = {
   id: string;
+  tenant_id: string;
   company_id: string;
   title: string;
   first_name: string;
@@ -42,6 +62,8 @@ export type Contact = {
 };
 export type Opportunity = {
   id: string;
+  tenant_id: string;
+  property_id: string;
   company_id: string;
   owner_id: string;
   name: string;
@@ -57,6 +79,8 @@ export type Opportunity = {
 };
 export type Task = {
   id: string;
+  tenant_id: string;
+  property_id: string;
   company_id: string;
   owner_id: string;
   title: string;
@@ -67,6 +91,10 @@ export type Task = {
 export type Workspace = {
   demo: boolean;
   profile: Profile;
+  tenant: Tenant;
+  property: Property;
+  accessRole: AccessRole;
+  propertyOptions: PropertyOption[];
   companies: Company[];
   contacts: Contact[];
   opportunities: Opportunity[];

@@ -39,6 +39,7 @@ export const opportunitySchema = z.object({
 
 export const transitionSchema = z.object({
   id: z.uuid(),
+  property_id: z.uuid(),
   stage: z.enum(STAGES),
   version: z.number().int().positive(),
   reason: z.string().trim().max(1000),
